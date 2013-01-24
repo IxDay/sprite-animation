@@ -37,8 +37,6 @@ if (document.all && !window.setInterval.isPolyfill) {
 
 
 var Sprite = function(url,size,time,vertical,element){
-//    this.url_ = url;
-
     var that = this;
 
     that.vertical_ = vertical;
@@ -48,20 +46,27 @@ var Sprite = function(url,size,time,vertical,element){
 
     var img = new Image();
     img.src = url;
-    img.onload = function() {
-        that.height_ = this.height;
-        that.width_ = this.width;
-    };
 
+    that.loaded_ = function(callback){
+        img.onload = function() {
+            that.height_ = this.height;
+            that.width_ = this.width;
+            if(callback){
+                callback(that);
+            }
+        };
+    }
 };
 
 Sprite.prototype.start = function(){
-
+    this.loaded_(function(elem){
+        console.log(elem);
+    })
 };
 
 var sprite = document.getElementsByClassName('sprite')[0];
-var toto = new Sprite('http://192.168.1.41/img/rotate360.jpg',376,1000,true,sprite);
-
+var toto = new Sprite('http://photos.carapuce.12.lc/img/rotate360.jpg',376,1000,true,sprite);
+toto.start();
 
 window.onload = function(){
     var sprites = document.getElementsByClassName('sprite');
@@ -81,5 +86,4 @@ window.onload = function(){
 //            console.log();
 //        },1000,sprites[i]);
     }
-
 };
