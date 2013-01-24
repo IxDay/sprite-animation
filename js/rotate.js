@@ -36,6 +36,32 @@ if (document.all && !window.setInterval.isPolyfill) {
 }
 
 
+var Sprite = function(url,size,time,vertical,element){
+//    this.url_ = url;
+
+    var that = this;
+
+    that.vertical_ = vertical;
+    that.size_ = size;
+    that.time_ = time;
+    that.element_ = element;
+
+    var img = new Image();
+    img.src = url;
+    img.onload = function() {
+        that.height_ = this.height;
+        that.width_ = this.width;
+    };
+
+};
+
+Sprite.prototype.start = function(){
+
+};
+
+var sprite = document.getElementsByClassName('sprite')[0];
+var toto = new Sprite('http://192.168.1.41/img/rotate360.jpg',376,1000,true,sprite);
+
 
 window.onload = function(){
     var sprites = document.getElementsByClassName('sprite');
@@ -47,13 +73,13 @@ window.onload = function(){
     for(var i = 0, l = sprites.length; i < l; i++){
         var sprite = sprites[i];
         var style = sprite.currentStyle || window.getComputedStyle(sprite, null);
-
+//        console.log(style.backgroundImage.slice(4, -1));
 //
 //        window.getComputedStyle(sprite,null).getPropertyValue('background');
 
-        window.setInterval(function(sprite){
-            console.log();
-        },1000,sprites[i]);
+//        window.setInterval(function(sprite){
+//            console.log();
+//        },1000,sprites[i]);
     }
 
 };
