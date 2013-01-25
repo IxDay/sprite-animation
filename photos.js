@@ -1,15 +1,14 @@
-var photos = (function (my) {
-    my.Sprite = function (url, size, time, element) {
+var photos = (function (module) {
+    module.Sprite = function (url, size, element,speed) {
         var that = this;
 
         that.size_ = size;
-        that.time_ = time;
+        that.speed_ = speed || 50;
         that.element_ = element;
         that.updateXY(0, 0);
 
         var img = new Image();
         img.src = url;
-
 
         img.onload = function () {
             that.height_ = this.height;
@@ -27,22 +26,20 @@ var photos = (function (my) {
                 that.element_.style.width = size;
                 that.element_.style.height = height;
             }
-
             that.element_.style.background = "url(" + url + ")";
-
-
+            that.loaded_ = true;
         };
     };
 
-    my.Sprite.prototype.updateXY = function (x, y) {
+    module.Sprite.prototype.updateXY = function (x, y) {
         this.x_ = x;
         this.y_ = y;
         this.element_.style.backgroundPosition = this.x_ + "px " + this.y_ + "px";
     };
 
-    my.Sprite.prototype.start = function () {
+    module.Sprite.prototype.start = function () {
         var that = this;
-        if (!that.loop_) {
+        if (!that.loop_ && that.loaded_) {
             that.loop_ = window.setInterval(function () {
                 var offset;
                 if (that.vertical_) {
@@ -53,28 +50,28 @@ var photos = (function (my) {
                     that.x_ = offset > that.width_ ? 0 : offset;
                 }
                 that.updateXY(that.x_, that.y_);
-            }, that.time_);
+            }, that.speed_);
         }
     };
 
-    my.Sprite.prototype.stop = function () {
+    module.Sprite.prototype.stop = function () {
         if (this.loop_) {
             window.clearInterval(this.loop_);
             this.loop_ = undefined;
         }
     };
 
-    my.Sprite.prototype.changeSpeed = function(speed){
+    module.Sprite.prototype.changeSpeed = function(speed){
         var restart = false;
         if (this.loop_){
             this.stop();
             restart = true;
         }
-        this.time_ = speed;
+        this.speed_ = speed;
         if (restart){
             this.start();
         }
     };
 
-    return my;
+    return module;
 }(photos || {}));
