@@ -1,4 +1,4 @@
-var photos = (function (module) {
+var spriteAnimation = (function (module) {
     module.Sprite = function (url, size, element,speed) {
         var that = this;
 
@@ -74,4 +74,4 @@ var photos = (function (module) {
     };
 
     return module;
-}(photos || {}));
+}(spriteAnimation || {}));
