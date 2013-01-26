@@ -52,16 +52,15 @@ var spriteAnimation = (function (module, undefined) {
         var that = this;
         if (!that.loop_ && that.loaded_) {
             that.loop_ = window.setInterval(function () {
-                var offset;
-                if (that.vertical_) {
-                    offset = that.y_ + that.size_;
-                    that.y_ = offset > that.height_ ? 0 : offset;
-                } else {
-                    offset = that.x_ + that.size_;
-                    that.x_ = offset > that.width_ ? 0 : offset;
-                }
-                console.log(that.x_);
-                that.updateXY(that.x_, that.y_);
+                var height = that.height_, width = that.width_, vertical = that.vertical_, x = that.x_, y = that.y_, size = that.size_;
+                var offset = vertical ? y : x;
+                size = that.reverse_ ? - size : size;
+
+
+                offset = offset + size;
+                if(offset < 0 ) offset  = vertical ? height : width;
+                if(offset > (vertical ? height : width)) offset = 0;
+                vertical ? that.updateXY(x,offset) : that.updateXY(offset,y);
             }, that.speed_);
         }
     };
@@ -73,16 +72,29 @@ var spriteAnimation = (function (module, undefined) {
         }
     };
 
-    module.Sprite.prototype.changeSpeed = function (speed) {
+    module.Sprite.prototype.restart = function(intern_function){
+        var that = this;
         var restart = false;
         if (this.loop_) {
             this.stop();
             restart = true;
         }
-        this.speed_ = speed;
+        intern_function(that);
         if (restart) {
             this.start();
         }
+    };
+
+    module.Sprite.prototype.reverse = function(){
+        this.restart(function(that){
+            that.reverse_ = !that.reverse_;
+        })
+    };
+
+    module.Sprite.prototype.changeSpeed = function (speed) {
+        this.restart(function(that){
+            that.speed_ = speed;
+        })
     };
 
     module.createSprite = function () {
@@ -124,7 +136,13 @@ var spriteAnimation = (function (module, undefined) {
                             break;
                         case 'sprite-speed':
                             button.addEventListener('change',function(){
-                                sprite.changeSpeed(this.options[this.selectedIndex].text)
+                                sprite.changeSpeed(this['options'][this['selectedIndex']].text);
+                            });
+                            break;
+
+                        case 'sprite-reverse':
+                            button.addEventListener('click',function(){
+                                sprite.reverse();
                             });
                             break;
                     }
