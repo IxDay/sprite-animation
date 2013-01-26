@@ -1,5 +1,6 @@
-var spriteAnimation = (function (module,undefined) {
-    module.Sprite = function (url, size, element,options) {
+var spriteAnimation = (function (module, undefined) {
+
+    module.Sprite = function (url, size, element, options) {
         var that = this;
 
         that.size_ = size;
@@ -7,7 +8,8 @@ var spriteAnimation = (function (module,undefined) {
 
         options = options || {};
         that.speed_ = options.speed || 50;
-        that.reverse_ = options.reverse || true;
+        that.reverse_ = options.reverse || false;
+        that.started_ = options.started || false;
 
         that.updateXY(0, 0);
 
@@ -31,15 +33,19 @@ var spriteAnimation = (function (module,undefined) {
                 that.element_.style.height = height;
             }
             that.element_.style.background = "url(" + url + ")";
-            that.element_.opacity = that.element_.opacity || 1;
+            that.element_.style.opacity = that.element_.style.opacity || 1;
             that.loaded_ = true;
+            if(that.started_){
+                that.start();
+            }
         };
     };
 
     module.Sprite.prototype.updateXY = function (x, y) {
         this.x_ = x;
         this.y_ = y;
-        this.element_.style.backgroundPosition = this.x_ + "px " + this.y_ + "px";
+        this.element_.style.backgroundPosition =
+            this.x_ + "px " + this.y_ + "px";
     };
 
     module.Sprite.prototype.start = function () {
@@ -54,6 +60,7 @@ var spriteAnimation = (function (module,undefined) {
                     offset = that.x_ + that.size_;
                     that.x_ = offset > that.width_ ? 0 : offset;
                 }
+                console.log(that.x_);
                 that.updateXY(that.x_, that.y_);
             }, that.speed_);
         }
@@ -66,40 +73,70 @@ var spriteAnimation = (function (module,undefined) {
         }
     };
 
-    module.Sprite.prototype.changeSpeed = function(speed){
+    module.Sprite.prototype.changeSpeed = function (speed) {
         var restart = false;
-        if (this.loop_){
+        if (this.loop_) {
             this.stop();
             restart = true;
         }
         this.speed_ = speed;
-        if (restart){
+        if (restart) {
             this.start();
         }
     };
 
-    module.createSprite = function(){
-        window.onload = function(){
+    module.createSprite = function () {
+        window.onload = function () {
             var sprites = document.getElementsByClassName('sprite');
-            for(var i = 0,l = sprites.length;i<l;i = i +1){
-                var sprite = sprites[i], options = {},buttons,display;
+            for (var i = 0, l = sprites.length; i < l; i = i + 1) {
+                var sprite = sprites[i], options = {}, buttons, display;
 
-                for(var j = 0, m = sprite.childNodes.length; j < m ; j = j +1){
+                for (var j = 0, m = sprite.childNodes.length; j < m; j =
+                    j + 1)
+                {
                     var child = sprite.childNodes[j];
-                    if (child.className === "sprite-buttons"){
+                    if (child.className === "sprite-buttons") {
                         buttons = child;
-                    }else if(child.className === "sprite-display"){
+                    } else if (child.className === "sprite-display") {
                         display = child;
                     }
                 }
 
                 options.speed = sprite.getAttribute('data-speed');
                 options.reverse = sprite.getAttribute('data-reverse') !== null;
-                sprite = new module.Sprite(sprite.getAttribute('data-url'),sprite.getAttribute('data-size'),display,options);
+                options.started = sprite.getAttribute('data-started') !== null;
 
+                sprite = new module.Sprite(sprite.getAttribute('data-url'),
+                                           cleanInt(sprite.getAttribute('data-size')),
+                                           display, options);
+                for (j = 0, m = buttons.childNodes.length; j < m; j = j + 1) {
+                    var button = buttons.childNodes[j];
+                    switch (button.className) {
+                        case 'sprite-stop':
+                            button.addEventListener('click', function () {
+                                sprite.stop();
+                            });
+                            break;
+                        case 'sprite-start':
+                            button.addEventListener('click', function () {
+                                sprite.start();
+                            });
+                            break;
+                        case 'sprite-speed':
+                            button.addEventListener('change',function(){
+                                sprite.changeSpeed(this.options[this.selectedIndex].text)
+                            });
+                            break;
+                    }
+                }
             }
         };
     };
+
+    function cleanInt(x) {
+        x = Number(x);
+        return Math[x >= 0 ? 'floor' : 'ceil'](x);
+    }
 
     return module;
 }(spriteAnimation || {}));
