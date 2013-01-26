@@ -35,7 +35,7 @@ var spriteAnimation = (function (module, undefined) {
             that.element_.style.background = "url(" + url + ")";
             that.element_.style.opacity = that.element_.style.opacity || 1;
             that.loaded_ = true;
-            if(that.started_){
+            if (that.started_) {
                 that.start();
             }
         };
@@ -52,17 +52,22 @@ var spriteAnimation = (function (module, undefined) {
         var that = this;
         if (!that.loop_ && that.loaded_) {
             that.loop_ = window.setInterval(function () {
-                var height = that.height_, width = that.width_, vertical = that.vertical_, x = that.x_, y = that.y_, size = that.size_;
-                var offset = vertical ? y : x;
-                size = that.reverse_ ? - size : size;
-
-
-                offset = offset + size;
-                if(offset < 0 ) offset  = vertical ? height : width;
-                if(offset > (vertical ? height : width)) offset = 0;
-                vertical ? that.updateXY(x,offset) : that.updateXY(offset,y);
+                that.nextMove();
             }, that.speed_);
         }
+    };
+
+    module.Sprite.prototype.nextMove = function () {
+        var that = this;
+        var height = that.height_, width = that.width_, vertical = that.vertical_, x = that.x_, y = that.y_, size = that.size_;
+        var offset = vertical ? y : x;
+        size = that.reverse_ ? -size : size;
+
+
+        offset = offset + size;
+        if (offset < 0) offset = vertical ? height : width;
+        if (offset > (vertical ? height : width)) offset = 0;
+        vertical ? that.updateXY(x, offset) : that.updateXY(offset, y);
     };
 
     module.Sprite.prototype.stop = function () {
@@ -72,7 +77,7 @@ var spriteAnimation = (function (module, undefined) {
         }
     };
 
-    module.Sprite.prototype.restart = function(intern_function){
+    module.Sprite.prototype.restart = function (intern_function) {
         var that = this;
         var restart = false;
         if (this.loop_) {
@@ -85,21 +90,40 @@ var spriteAnimation = (function (module, undefined) {
         }
     };
 
-    module.Sprite.prototype.reverse = function(){
-        this.restart(function(that){
+    module.Sprite.prototype.reverse = function () {
+        this.restart(function (that) {
             that.reverse_ = !that.reverse_;
         })
     };
 
     module.Sprite.prototype.changeSpeed = function (speed) {
-        this.restart(function(that){
+        this.restart(function (that) {
             that.speed_ = speed;
         })
+    };
+
+    module.Sprite.prototype.oneTurn = function () {
+
+        var that = this, nb_it = (that.vertical_ ? that.height_ : that.width_) /
+            that.size_, i = 0;
+
+        if (!that.loaded_) return;
+        if (that.loop_) that.stop();
+
+        that.loop_ = window.setInterval(function () {
+            that.nextMove();
+            i = i + 1;
+            if(i > nb_it) that.stop();
+        }, that.speed_);
+
     };
 
     module.createSprite = function () {
         window.onload = function () {
             var sprites = document.getElementsByClassName('sprite');
+
+            if (!sprites) return;
+
             for (var i = 0, l = sprites.length; i < l; i = i + 1) {
                 var sprite = sprites[i], options = {}, buttons, display;
 
@@ -121,6 +145,9 @@ var spriteAnimation = (function (module, undefined) {
                 sprite = new module.Sprite(sprite.getAttribute('data-url'),
                                            cleanInt(sprite.getAttribute('data-size')),
                                            display, options);
+
+                if (!buttons) return;
+
                 for (j = 0, m = buttons.childNodes.length; j < m; j = j + 1) {
                     var button = buttons.childNodes[j];
                     switch (button.className) {
@@ -135,16 +162,19 @@ var spriteAnimation = (function (module, undefined) {
                             });
                             break;
                         case 'sprite-speed':
-                            button.addEventListener('change',function(){
+                            button.addEventListener('change', function () {
                                 sprite.changeSpeed(this['options'][this['selectedIndex']].text);
                             });
                             break;
-
                         case 'sprite-reverse':
-                            button.addEventListener('click',function(){
+                            button.addEventListener('click', function () {
                                 sprite.reverse();
                             });
                             break;
+                        case 'sprite-one-turn':
+                            button.addEventListener('click', function () {
+                                sprite.oneTurn();
+                            });
                     }
                 }
             }
