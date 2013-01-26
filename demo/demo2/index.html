@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Demo 360°</title>
+</head>
+<body>
+
+<div style="width: 700px; margin:0 auto">
+
+
+    <div class="sprite" data-url="http://192.168.1.41/demo2/img/pic.jpg" data-size="300">
+        <div class="sprite-buttons">
+            <button class="sprite-stop">Stop</button>
+            <button class="sprite-start">Start</button>
+            <label for="sprite-speed">Sprite speed</label>
+            <select class="sprite-speed" id="sprite-speed">
+                <option>100</option>
+                <option selected>50</option>
+                <option>10</option>
+            </select>
+        </div>
+        <div class="sprite-display"></div>
+    </div>
+</div>
+<script type="text/javascript" src="js/sprite_animation.js"></script>
+<script type="text/javascript" src="js/rotate.js"></script>
+</body>
+</html>

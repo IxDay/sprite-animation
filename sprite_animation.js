@@ -73,5 +73,9 @@ var spriteAnimation = (function (module) {
         }
     };
 
+    module.createSprite = function(){
+
+    };
+
     return module;
 }(spriteAnimation || {}));
