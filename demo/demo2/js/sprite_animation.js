@@ -1,7 +1,4 @@
-"use strict";
-
-var spriteAnimation = (function (undefined) {
-    var module = {};
+var spriteAnimation = (function (module, undefined) {
 
     /**
      * Creates a new sprite element.
@@ -81,7 +78,7 @@ var spriteAnimation = (function (undefined) {
         img.onload = function () {
             var height = this.height, width = this.width, vertical = height >
                 width;
-            //computes sprite size attributes.
+            //computes some attributes.
             that.vertical_ = vertical;
             that.size_ = getCssSize(vertical ? element.style.height
                                         : element.style.width);
@@ -119,7 +116,7 @@ var spriteAnimation = (function (undefined) {
      * @param back Calculates the previous sprite if true.
      */
     module.Sprite.prototype.nextMove = function (back) {
-        var that = this, max = that.max_, pos = that.pos_ + back ? -that.size_ : that.size_;
+        var that = this, max = that.max_, pos = that.pos_ + (back ? -that.size_ : that.size_);
 
         if (pos < 0) pos = max;
         if (pos > max) pos = 0;
@@ -329,4 +326,4 @@ var spriteAnimation = (function (undefined) {
     }
 
     return module;
-}());
+}(spriteAnimation || {}));
