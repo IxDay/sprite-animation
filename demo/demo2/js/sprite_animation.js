@@ -3,18 +3,53 @@ var spriteAnimation = (function (module, undefined) {
     module.Sprite = function (url, size, element, options) {
         var that = this;
 
+
         that.size_ = size;
-        that.element_ = element;
 
         options = options || {};
         that.speed_ = options.speed || 50;
         that.reverse_ = options.reverse || false;
-        that.started_ = options.started || false;
+        that.tick_ = options.tick || 10;
 
-        that.updateXY(0, 0);
-
+        var started = options.started || false;
+        var mouse_down = false;
         var img = new Image();
         img.src = url;
+
+        var posXori;
+
+        element.style.background = "url(" + url + ")";
+        element.style.opacity = element.style.opacity || 1;
+        element.style.cursor = 'move';
+
+        element.addEventListener('mouseout',function(){
+            mouse_down = false;
+        });
+
+        element.addEventListener('mousemove',function(e){
+            if(mouse_down){
+                var move = cleanInt((e.x - posXori)/that.tick_);
+                if(move >= 1){
+                    posXori = e.x;
+                    that.nextMove(false);
+                }
+                if(move <= -1){
+                    posXori = e.x;
+                    that.nextMove(true);
+                }
+            }
+        });
+
+        element.addEventListener('mousedown',function(e){
+            mouse_down = true;
+            posXori = e.x;
+            if (that.loop_) that.stop();
+        });
+
+        element.addEventListener('mouseup',function(){
+            mouse_down = false;
+        });
+
 
         img.onload = function () {
             that.height_ = this.height;
@@ -26,16 +61,17 @@ var spriteAnimation = (function (module, undefined) {
             var size = that.size_ + "px";
 
             if (that.vertical_) {
-                that.element_.style.width = width;
-                that.element_.style.height = size;
+                element.style.width = width;
+                element.style.height = size;
             } else {
-                that.element_.style.width = size;
-                that.element_.style.height = height;
+                element.style.width = size;
+                element.style.height = height;
             }
-            that.element_.style.background = "url(" + url + ")";
-            that.element_.style.opacity = that.element_.style.opacity || 1;
+
             that.loaded_ = true;
-            if (that.started_) {
+            that.element_ = element;
+            that.updateXY(0, 0);
+            if (started) {
                 that.start();
             }
         };
@@ -52,17 +88,16 @@ var spriteAnimation = (function (module, undefined) {
         var that = this;
         if (!that.loop_ && that.loaded_) {
             that.loop_ = window.setInterval(function () {
-                that.nextMove();
+                that.nextMove(that.reverse_);
             }, that.speed_);
         }
     };
 
-    module.Sprite.prototype.nextMove = function () {
+    module.Sprite.prototype.nextMove = function (back) {
         var that = this;
         var height = that.height_, width = that.width_, vertical = that.vertical_, x = that.x_, y = that.y_, size = that.size_;
         var offset = vertical ? y : x;
-        size = that.reverse_ ? -size : size;
-
+        size = back ? -size : size;
 
         offset = offset + size;
         if (offset < 0) offset = vertical ? height : width;
@@ -111,7 +146,7 @@ var spriteAnimation = (function (module, undefined) {
         if (that.loop_) that.stop();
 
         that.loop_ = window.setInterval(function () {
-            that.nextMove();
+            that.nextMove(that.reverse_);
             i = i + 1;
             if(i > nb_it) that.stop();
         }, that.speed_);
@@ -124,12 +159,12 @@ var spriteAnimation = (function (module, undefined) {
 
             if (!sprites) return;
 
+            var tick;
             for (var i = 0, l = sprites.length; i < l; i = i + 1) {
                 var sprite = sprites[i], options = {}, buttons, display;
 
                 for (var j = 0, m = sprite.childNodes.length; j < m; j =
-                    j + 1)
-                {
+                    j + 1) {
                     var child = sprite.childNodes[j];
                     if (child.className === "sprite-buttons") {
                         buttons = child;
@@ -141,10 +176,13 @@ var spriteAnimation = (function (module, undefined) {
                 options.speed = sprite.getAttribute('data-speed');
                 options.reverse = sprite.getAttribute('data-reverse') !== null;
                 options.started = sprite.getAttribute('data-started') !== null;
+                if ((tick = sprite.getAttribute('data-tick')) !== null) {
+                    options.tick = cleanInt(tick);
+                }
 
                 sprite = new module.Sprite(sprite.getAttribute('data-url'),
-                                           cleanInt(sprite.getAttribute('data-size')),
-                                           display, options);
+                    cleanInt(sprite.getAttribute('data-size')),
+                    display, options);
 
                 if (!buttons) return;
 

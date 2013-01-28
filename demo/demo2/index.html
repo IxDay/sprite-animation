@@ -7,7 +7,14 @@
 <body>
 
 <div style="width: 700px; margin:0 auto">
-    <div class="sprite" data-url="http://192.168.1.41/demo2/img/rotate360.jpg" data-size="376" data-started >
+
+
+    <div class="sprite"
+         data-url="http://photos.carapuce.12.lc/demo2/img/rotate360.jpg"
+         data-size="376"
+         data-started
+         data-tick="100">
+
         <div class="sprite-buttons">
             <button class="sprite-stop">Stop</button>
             <button class="sprite-start">Start</button>
@@ -22,8 +29,13 @@
         </div>
         <div class="sprite-display"></div>
     </div>
+
+
 </div>
 <script type="text/javascript" src="js/sprite_animation.js"></script>
-<script type="text/javascript" src="js/rotate.js"></script>
+<script type="text/javascript">
+    spriteAnimation.createSprite();
+</script>
+
 </body>
 </html>
