@@ -1,6 +1,6 @@
 var spriteAnimation = (function (module, undefined) {
 
-    module.Sprite = function (url, size, element, options) {
+    module.Sprite = function (url, element, options) {
         var that = this;
 
         options = options || {};
@@ -8,7 +8,6 @@ var spriteAnimation = (function (module, undefined) {
         that.speed_ = options.speed || 50;
         that.reverse_ = options.reverse || false;
         that.tick_ = options.tick || 10;
-        that.size_ = size;
         that.element_ = element;
 
         var started = options.started || false;
@@ -18,76 +17,67 @@ var spriteAnimation = (function (module, undefined) {
         img.src = url;
 
         //firefox fix
-        element.addEventListener('dragstart',function(e){
+        element.addEventListener('dragstart', function (e) {
             e.preventDefault();
         });
 
         element.style.background = "url(" + url + ")";
         element.style.cursor = 'move';
 
-//        var spinner = new Spinner().spin();
-//        element.appendChild(spinner.el);
 
-        element.addEventListener('mouseout',function(){
+        element.addEventListener('mouseout', function () {
             mouseDown = false;
         });
 
-        element.addEventListener('mousemove',function(e){
-            if(mouseDown){
-
-                var move = cleanInt((e.clientX - posOri)/that.tick_);
-                if(move >= 1){
+        element.addEventListener('mousemove', function (e) {
+            if (mouseDown) {
+                var move = cleanInt((e.clientX - posOri) / that.tick_);
+                if (move >= 1) {
                     posOri = e.clientX;
                     that.nextMove(false);
                 }
-                if(move <= -1){
+                if (move <= -1) {
                     posOri = e.clientX;
                     that.nextMove(true);
                 }
             }
         });
 
-        element.addEventListener('mousedown',function(e){
+        element.addEventListener('mousedown', function (e) {
             mouseDown = true;
             posOri = e.clientX;
             if (that.loop_) that.stop();
         });
 
-        element.addEventListener('mouseup',function(){
+        element.addEventListener('mouseup', function () {
             mouseDown = false;
         });
 
 
+        var spinner = initSpinner(element);
+
         img.onload = function () {
-            that.height_ = this.height;
-            that.width_ = this.width;
-            that.vertical_ = that.height_ > that.width_;
+            var height = this.height, width = this.width, vertical = height >
+                width;
 
-            var width = that.width_ + "px";
-            var height = that.height_ + "px";
-            var size = that.size_ + "px";
+            that.vertical_ = vertical;
+            that.size_ = getCssSize(vertical ?
+                element.style.height : element.style.width);
 
-            if (that.vertical_) {
-                element.style.width = width;
-                element.style.height = size;
-            } else {
-                element.style.width = size;
-                element.style.height = height;
-            }
-
+            that.max_ = vertical ? this.height : this.width;
             that.loaded_ = true;
-            that.updateXY(0, 0);
-            if (started) {
-                that.start();
-            }
+            that.update(0);
+
+            if (spinner) spinner.stop();
+
+            if (started) that.start();
         };
     };
 
-    module.Sprite.prototype.updateXY = function (x, y) {
-        this.x_ = x;
-        this.y_ = y;
+    module.Sprite.prototype.update = function (pos) {
+        this.pos_ = pos;
         this.element_.style.backgroundPosition =
-            this.x_ + "px " + this.y_ + "px";
+            this.vertical_ ? "0px " + pos + "px" : pos + "px 0px";
     };
 
     module.Sprite.prototype.start = function () {
@@ -100,15 +90,12 @@ var spriteAnimation = (function (module, undefined) {
     };
 
     module.Sprite.prototype.nextMove = function (back) {
-        var that = this;
-        var height = that.height_, width = that.width_, vertical = that.vertical_, x = that.x_, y = that.y_, size = that.size_;
-        var offset = vertical ? y : x;
+        var that = this, size = that.size_, pos = that.pos_, max = that.max_;
         size = back ? -size : size;
-
-        offset = offset + size;
-        if (offset < 0) offset = vertical ? height : width;
-        if (offset > (vertical ? height : width)) offset = 0;
-        vertical ? that.updateXY(x, offset) : that.updateXY(offset, y);
+        pos = pos + size;
+        if (pos < 0) pos = max;
+        if (pos > max) pos = 0;
+        that.update(pos);
     };
 
     module.Sprite.prototype.stop = function () {
@@ -154,20 +141,19 @@ var spriteAnimation = (function (module, undefined) {
         that.loop_ = window.setInterval(function () {
             that.nextMove(that.reverse_);
             i = i + 1;
-            if(i > nb_it) that.stop();
+            if (i > nb_it) that.stop();
         }, that.speed_);
 
     };
 
     module.createSprite = function () {
         window.onload = function () {
-            var sprites = document.getElementsByClassName('sprite');
+            var tick, sprite, buttons, display, options = {}, sprites = document.getElementsByClassName('sprite');
 
             if (!sprites) return;
 
-            var tick;
             for (var i = 0, l = sprites.length; i < l; i = i + 1) {
-                var sprite = sprites[i], options = {}, buttons, display;
+                sprite = sprites[i];
 
                 for (var j = 0, m = sprite.childNodes.length; j < m; j =
                     j + 1) {
@@ -187,7 +173,6 @@ var spriteAnimation = (function (module, undefined) {
                 }
 
                 sprite = new module.Sprite(sprite.getAttribute('data-url'),
-                    cleanInt(sprite.getAttribute('data-size')),
                     display, options);
 
                 if (!buttons) return;
@@ -225,9 +210,44 @@ var spriteAnimation = (function (module, undefined) {
         };
     };
 
+    /**
+     * Extract an int from variable x.
+     * @param x the variable to be parse, it can be a string, a float
+     * @return {*}
+     */
     function cleanInt(x) {
         x = Number(x);
         return Math[x >= 0 ? 'floor' : 'ceil'](x);
+    }
+
+    function getCssSize(cssSize) {
+        return cleanInt(cssSize.substring(0, cssSize.length - 2))
+    }
+
+    /**
+     * Initialize
+     * @param element
+     * @return {*}
+     */
+    function initSpinner(element) {
+        try{
+            var spinner = new Spinner().spin(),
+                height = cleanInt((getCssSize(element.style.height) -
+                    getCssSize(spinner.el.style.height)) / 2),
+                width = cleanInt((getCssSize(element.style.width) -
+                    getCssSize(spinner.el.style.width)) / 2);
+
+            spinner.el.style.margin =
+                height + "px " + width + "px " + height + "px " + width + "px";
+            spinner.el.style.float = "left";
+
+            element.appendChild(spinner.el);
+            return spinner;
+        }catch (e){
+            return undefined
+        }
+
+
     }
 
     return module;

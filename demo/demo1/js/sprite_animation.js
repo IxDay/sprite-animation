@@ -5,7 +5,7 @@ var spriteAnimation = (function (module) {
         that.size_ = size;
         that.speed_ = speed || 50;
         that.element_ = element;
-        that.updateXY(0, 0);
+        that.update(0, 0);
 
         var img = new Image();
         img.src = url;
@@ -32,7 +32,7 @@ var spriteAnimation = (function (module) {
         };
     };
 
-    module.Sprite.prototype.updateXY = function (x, y) {
+    module.Sprite.prototype.update = function (x, y) {
         this.x_ = x;
         this.y_ = y;
         this.element_.style.backgroundPosition = this.x_ + "px " + this.y_ + "px";
@@ -50,7 +50,7 @@ var spriteAnimation = (function (module) {
                     offset = that.x_ + that.size_;
                     that.x_ = offset > that.width_ ? 0 : offset;
                 }
-                that.updateXY(that.x_, that.y_);
+                that.update(that.x_, that.y_);
             }, that.speed_);
 
 //            var i = 0;
