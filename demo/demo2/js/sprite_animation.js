@@ -3,51 +3,58 @@ var spriteAnimation = (function (module, undefined) {
     module.Sprite = function (url, size, element, options) {
         var that = this;
 
-
-        that.size_ = size;
-
         options = options || {};
+
         that.speed_ = options.speed || 50;
         that.reverse_ = options.reverse || false;
         that.tick_ = options.tick || 10;
+        that.size_ = size;
+        that.element_ = element;
 
         var started = options.started || false;
-        var mouse_down = false;
+        var mouseDown = false;
         var img = new Image();
+        var posOri;
         img.src = url;
 
-        var posXori;
+        //firefox fix
+        element.addEventListener('dragstart',function(e){
+            e.preventDefault();
+        });
 
         element.style.background = "url(" + url + ")";
-        element.style.opacity = element.style.opacity || 1;
         element.style.cursor = 'move';
 
+//        var spinner = new Spinner().spin();
+//        element.appendChild(spinner.el);
+
         element.addEventListener('mouseout',function(){
-            mouse_down = false;
+            mouseDown = false;
         });
 
         element.addEventListener('mousemove',function(e){
-            if(mouse_down){
-                var move = cleanInt((e.x - posXori)/that.tick_);
+            if(mouseDown){
+
+                var move = cleanInt((e.clientX - posOri)/that.tick_);
                 if(move >= 1){
-                    posXori = e.x;
+                    posOri = e.clientX;
                     that.nextMove(false);
                 }
                 if(move <= -1){
-                    posXori = e.x;
+                    posOri = e.clientX;
                     that.nextMove(true);
                 }
             }
         });
 
         element.addEventListener('mousedown',function(e){
-            mouse_down = true;
-            posXori = e.x;
+            mouseDown = true;
+            posOri = e.clientX;
             if (that.loop_) that.stop();
         });
 
         element.addEventListener('mouseup',function(){
-            mouse_down = false;
+            mouseDown = false;
         });
 
 
@@ -69,7 +76,6 @@ var spriteAnimation = (function (module, undefined) {
             }
 
             that.loaded_ = true;
-            that.element_ = element;
             that.updateXY(0, 0);
             if (started) {
                 that.start();
