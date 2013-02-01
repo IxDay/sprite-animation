@@ -1,4 +1,4 @@
-Demo 2 How to
+Demo 1 How to
 =============
 
 Initialization
