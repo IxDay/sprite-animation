@@ -4,7 +4,7 @@ Demo 2 How to
 Minimalist
 ----------
 
-Insert the following code into your HTML page (demo2 example)
+Insert the following code into your HTML page
 
     <div class="sprite" data-url="img/rotate360.jpg" >
         <div class="sprite-display" style="width: 704px; height: 376px"></div>
@@ -20,6 +20,7 @@ Features
 
 It is the minimalistic insertion. You can add some feature by adding into the
 div with sprite class (same level as sprite-display):
+
     <div class="sprite-buttons">
         <button class="sprite-stop">Stop</button>
         <button class="sprite-start">Start</button>
