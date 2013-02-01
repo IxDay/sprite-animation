@@ -10,7 +10,6 @@
 
     <div class="sprite"
          data-url="img/rotate360.jpg"
-         data-size="376"
          data-started>
 
         <div class="sprite-buttons">
@@ -20,9 +19,9 @@
             <button class="sprite-one-turn">One turn</button>
             <label for="sprite-speed">Sprite speed</label>
             <select class="sprite-speed" id="sprite-speed">
-                <option>100</option>
-                <option selected>50</option>
-                <option>10</option>
+                <option value="100" >slow</option>
+                <option value="50" selected>normal</option>
+                <option value="10">quick</option>
             </select>
         </div>
         <div class="sprite-display" style="width: 704px; height: 376px"></div>
@@ -32,7 +31,7 @@
 <script type="text/javascript" src="js/spin.min.js"></script>
 <script type="text/javascript" src="js/sprite_animation.js"></script>
 <script type="text/javascript">
-    spriteAnimation.createSprite();
+    CreateSprite();
 </script>
 
 </body>

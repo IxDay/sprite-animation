@@ -1,8 +1,8 @@
 /*global Spinner*/
 
-var spriteAnimation = (function (undef) {
+(function (window, document, undef) {
     "use strict";
-    var module = {};
+    var Sprite, CreateSprite;
 
     /**
      * Extract an int from variable x. Return Nan if it cannot be parsed, preserve infinite.
@@ -88,12 +88,12 @@ var spriteAnimation = (function (undef) {
             break;
         case 'sprite-speed':
             button.addEventListener('change', function () {
-                sprite.changeSpeed(this.options[this.selectedIndex].text);
+                sprite.changeSpeed(this.options[this.selectedIndex].value);
             });
             break;
         case 'sprite-reverse':
             button.addEventListener('click', function () {
-                sprite.reverse();
+                sprite.invert();
             });
             break;
         case 'sprite-one-turn':
@@ -116,7 +116,7 @@ var spriteAnimation = (function (undef) {
      *  - tick      (int)   : Defines the sensitivity for the mouse scrolling on the sprite (default 10).
      * @constructor Constructs a new Sprite object.
      */
-    module.Sprite = function (url, element, options) {
+    Sprite = function (url, element, options) {
         //initialize attributes with parameters
         options = options || {};
 
@@ -187,7 +187,7 @@ var spriteAnimation = (function (undef) {
             that.vertical = vertical;
             that.size = getCssSize(vertical ? element.style.height
                 : element.style.width);
-            that.max = vertical ? this.height : this.width;
+            that.max = vertical ? height : width;
             that.loaded = true;
             that.update(0);
 
@@ -205,7 +205,7 @@ var spriteAnimation = (function (undef) {
      * Updates the sprite position with the new position.
      * @param pos The new position in the sprite which will be displayed.
      */
-    module.Sprite.prototype.update = function (pos) {
+    Sprite.prototype.update = function (pos) {
         this.pos = pos;
         this.element.style.backgroundPosition =
             this.vertical ? "0px " + pos + "px" : pos + "px 0px";
@@ -214,7 +214,7 @@ var spriteAnimation = (function (undef) {
     /**
      * Starts sprite animation if not started.
      */
-    module.Sprite.prototype.start = function () {
+    Sprite.prototype.start = function () {
         var that = this;
         if (!that.loop && that.loaded) {
             that.loop = window.setInterval(function () {
@@ -227,7 +227,7 @@ var spriteAnimation = (function (undef) {
      * Calculates the next sprite position and displays it.
      * @param back Calculates the previous sprite if true.
      */
-    module.Sprite.prototype.nextMove = function (back) {
+    Sprite.prototype.nextMove = function (back) {
         var that = this, max = that.max, pos = that.pos + (back ? -that.size : that.size);
 
         if (pos < 0) {
@@ -242,7 +242,7 @@ var spriteAnimation = (function (undef) {
     /**
      * Stops the sprite animation.
      */
-    module.Sprite.prototype.stop = function () {
+    Sprite.prototype.stop = function () {
         if (this.loop) {
             window.clearInterval(this.loop);
             this.loop = undef;
@@ -253,7 +253,7 @@ var spriteAnimation = (function (undef) {
      * Executes an intern function and restart the sprite.
      * @param intern_function The function which will be executed between the stop and start.
      */
-    module.Sprite.prototype.restart = function (intern_function) {
+    Sprite.prototype.restart = function (intern_function) {
         var that = this, restart = false;
         if (this.loop) {
             this.stop();
@@ -268,7 +268,7 @@ var spriteAnimation = (function (undef) {
     /**
      * Reverse the sprite direction.
      */
-    module.Sprite.prototype.reverse = function () {
+    Sprite.prototype.invert = function () {
         this.restart(function (that) {
             that.reverse = !that.reverse;
         });
@@ -278,7 +278,7 @@ var spriteAnimation = (function (undef) {
      * Change the sprite transition speed.
      * @param speed The new transition speed.
      */
-    module.Sprite.prototype.changeSpeed = function (speed) {
+    Sprite.prototype.changeSpeed = function (speed) {
         this.restart(function (that) {
             that.speed = speed;
         });
@@ -287,10 +287,10 @@ var spriteAnimation = (function (undef) {
     /**
      * Stops the sprite animation and performs one sprite turn.
      */
-    module.Sprite.prototype.oneTurn = function () {
+    Sprite.prototype.oneTurn = function () {
 
         var that = this,
-            nb_it = (that.vertical ? that.height : that.width) / that.size,
+            nb_it = that.max / that.size,
             i = 0;
 
         if (!that.loaded) {
@@ -322,14 +322,9 @@ var spriteAnimation = (function (undef) {
      *  - data-started              : If the attribute is present the sprite transition is started when it will be fully loaded.
      *  - data-tick = (value)       : Defines the sensitivity for the mouse scrolling on the sprite.
      */
-    module.createSprite = function () {
+    CreateSprite = function () {
         window.onload = function () {
-            var sprite, buttons, display, options, sprites = document.getElementsByClassName('sprite'), i, j, l, m, child;
-
-            //Stops the function if no element is retrieved.
-            if (!sprites) {
-                return;
-            }
+            var sprite, buttons, display, options, sprites = document.getElementsByClassName('sprite'), i, j, l, m, child, listSprite = [];
 
             for (i = 0, l = sprites.length; i < l; i = i + 1) {
                 sprite = sprites[i];
@@ -348,7 +343,7 @@ var spriteAnimation = (function (undef) {
                     options = parseOptions(sprite);
                     //Creates a new sprite object.
                     sprite =
-                        new module.Sprite(sprite.getAttribute('data-url'), display,
+                        new Sprite(sprite.getAttribute('data-url'), display,
                             options);
                     //Stops the evaluation of the given element if no buttons are defined.
                     if (buttons) {
@@ -357,9 +352,13 @@ var spriteAnimation = (function (undef) {
                         }
                     }
                 }
+
+                listSprite.push(sprite);
             }
+            return listSprite;
         };
     };
 
-    return module;
-}());
+    window.Sprite = Sprite;
+    window.CreateSprite = CreateSprite;
+}(window, document));
